@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 5.0.4
+-- version 5.1.0-3.fc32
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: localhost
--- Tiempo de generación: 26-04-2021 a las 18:04:44
--- Versión del servidor: 10.4.17-MariaDB
--- Versión de PHP: 7.4.13
+-- Tiempo de generación: 25-05-2021 a las 00:23:35
+-- Versión del servidor: 10.4.19-MariaDB
+-- Versión de PHP: 7.4.19
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -29,19 +29,64 @@ SET time_zone = "+00:00";
 
 CREATE TABLE `cart` (
   `cart_id` int(11) NOT NULL,
-  `item_id` int(11) NOT NULL,
+  `item_id` int(11) DEFAULT NULL,
   `cart_qty` int(11) NOT NULL,
+  `cart_precio` float NOT NULL,
   `cart_stock_id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
   `cart_uniqid` varchar(35) CHARACTER SET latin1 NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
 
+-- --------------------------------------------------------
+
 --
--- Volcado de datos para la tabla `cart`
+-- Estructura de tabla para la tabla `categoria_carnes`
 --
 
-INSERT INTO `cart` (`cart_id`, `item_id`, `cart_qty`, `cart_stock_id`, `user_id`, `cart_uniqid`) VALUES
-(121, 5, 1, 36, 1, '6082ad5ec59a0');
+CREATE TABLE `categoria_carnes` (
+  `categoria_id` int(11) NOT NULL,
+  `categoria_desc` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_spanish_ci NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
+
+--
+-- Volcado de datos para la tabla `categoria_carnes`
+--
+
+INSERT INTO `categoria_carnes` (`categoria_id`, `categoria_desc`) VALUES
+(1, 'Carne vacuna'),
+(2, 'Carne cerdo'),
+(3, 'Carne pollo');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `compra_proveedores`
+--
+
+CREATE TABLE `compra_proveedores` (
+  `id_compra` int(11) NOT NULL,
+  `id_proveedor` int(11) NOT NULL,
+  `id_item` int(11) NOT NULL,
+  `qty_compra` int(11) NOT NULL,
+  `id_type` int(11) DEFAULT NULL,
+  `fecha_compra` date NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
+
+--
+-- Volcado de datos para la tabla `compra_proveedores`
+--
+
+INSERT INTO `compra_proveedores` (`id_compra`, `id_proveedor`, `id_item`, `qty_compra`, `id_type`, `fecha_compra`) VALUES
+(1, 1, 8, 50, 1, '2021-04-29'),
+(2, 8, 8, 50, NULL, '2021-04-30'),
+(3, 8, 8, 50, NULL, '2021-04-30'),
+(4, 4, 9, 30, NULL, '2021-04-30'),
+(5, 7, 6, 20, NULL, '2021-04-30'),
+(6, 6, 10, 60, NULL, '2021-04-29'),
+(7, 2, 10, 30, NULL, '2021-04-30'),
+(8, 1, 25, 50, NULL, '2021-04-30'),
+(9, 6, 5, 10, NULL, '2021-04-23'),
+(10, 1, 12, 50, NULL, '2021-04-30');
 
 -- --------------------------------------------------------
 
@@ -79,12 +124,10 @@ CREATE TABLE `item` (
 --
 
 INSERT INTO `item` (`item_id`, `item_name`, `purchase`, `item_price`, `item_iva`, `item_type_id`, `item_code`, `item_supplier_id`) VALUES
-(5, 'Fideos', 50, 70, 21, NULL, '495859594', 1),
-(6, 'Shampoo', 40, 60, 10, NULL, '482928384', 1),
-(7, 'Jabon', 20, 53.5, 10.5, NULL, '9876454', 1),
-(8, 'Arroz', 20.5, 25.9, 10.5, NULL, '948475758', 2),
-(9, 'Yerba', 300, 350, 21, NULL, '8748484585', 2),
-(10, 'Detergente', 300, 333, 21, NULL, '583833994', 4);
+(5, 'Carne Vacuna', 0, 0, 0, NULL, '001', 2),
+(6, 'Carne Cerdo', 0, 0, 0, NULL, '002', 4),
+(7, 'Carne Pollo', 0, 0, 0, NULL, '003', 5),
+(8, 'Yerba Marolio', 240, 285, 21, NULL, '938482', 8);
 
 -- --------------------------------------------------------
 
@@ -96,6 +139,14 @@ CREATE TABLE `item_type` (
   `item_type_id` int(11) NOT NULL,
   `item_type_desc` varchar(50) CHARACTER SET latin1 NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
+
+--
+-- Volcado de datos para la tabla `item_type`
+--
+
+INSERT INTO `item_type` (`item_type_id`, `item_type_desc`) VALUES
+(1, 'Almacen'),
+(2, 'Carne');
 
 -- --------------------------------------------------------
 
@@ -112,8 +163,6 @@ CREATE TABLE `proveedores` (
   `telefono` varchar(30) NOT NULL,
   `email` varchar(30) NOT NULL,
   `fecha_alta` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  `estado` varchar(4) NOT NULL,
-  `categoria_iva` varchar(40) NOT NULL,
   `cuit` varchar(40) NOT NULL,
   `cbu` varchar(50) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -122,14 +171,16 @@ CREATE TABLE `proveedores` (
 -- Volcado de datos para la tabla `proveedores`
 --
 
-INSERT INTO `proveedores` (`idproveedor`, `razon_social`, `domicilio`, `localidad`, `provincia`, `telefono`, `email`, `fecha_alta`, `estado`, `categoria_iva`, `cuit`, `cbu`) VALUES
-(1, 'PRUEBA', 'SAN MARTIN 444', 'BARADERO', 'BUENOS AIRES', '549838384', 'KKLKL', '2021-04-15 16:55:43', 'ALTA', 'MONOTRIBUTO', '5555', '6666'),
-(2, 'PRUEBA 2', 'MITRE 444', 'Baradero', 'BUENOS AIRES', '03329307996', 'mail@mail.com', '2021-04-15 16:57:33', 'BAJA', 'MONOTRIBUTO', '8495959686', '383949595'),
-(4, 'prueba 3', 'algun lugar 1928', 'baradero', 'buenos aires', '8575843', 'Mail@mail.com', '2021-04-12 15:07:03', 'Alta', 'Monotributo', '293848595', '383747458585'),
-(5, 'prueba 4', 'algun lugar 2982', 'baradero', 'buenos aires', '49595966', 'Mail@mail.com', '2021-04-12 15:14:12', 'Alta', 'Monotributo', '78474955', '89394945'),
-(6, 'prueba 4', 'algun lugar 1928', 'baradero', 'buenos aires', '8575843', 'Mail@mail.com', '2021-04-12 15:15:05', 'Alta', 'Monotributo', '293848595', '383747458585'),
-(7, 'prueba 5', 'otra', 'baradero', 'buenos aires', '836039394', 'Mail@mail.com', '2021-04-15 16:58:05', 'Alta', 'Monotributo', '938484432', '29848485'),
-(8, 'prueba 6', 'cualquiera', 'baradero', 'buenos aires', '34848505', 'Alguno@mail.com', '2021-04-19 15:57:31', 'Alta', 'Monotributo', '38948405', '38384949');
+INSERT INTO `proveedores` (`idproveedor`, `razon_social`, `domicilio`, `localidad`, `provincia`, `telefono`, `email`, `fecha_alta`, `cuit`, `cbu`) VALUES
+(1, 'PRUEBA', 'SAN MARTIN 444', 'BARADERO', 'BUENOS AIRES', '549838384', 'KKLKL', '2021-04-29 02:06:34', '5555', '7777'),
+(2, 'PRUEBA 2', 'MITRE 444', 'Baradero', 'BUENOS AIRES', '03329307996', 'mail@mail.com', '2021-04-15 16:57:33', '8495959686', '383949595'),
+(4, 'prueba 3', 'algun lugar 1928', 'baradero', 'buenos aires', '8575843', 'Mail@mail.com', '2021-04-12 15:07:03', '293848595', '383747458585'),
+(5, 'prueba 4', 'algun lugar 2982', 'baradero', 'buenos aires', '49595966', 'Mail@mail.com', '2021-04-12 15:14:12', '78474955', '89394945'),
+(6, 'prueba 4', 'algun lugar 1928', 'baradero', 'buenos aires', '8575843', 'Mail@mail.com', '2021-04-12 15:15:05', '293848595', '383747458585'),
+(7, 'prueba 5', 'otra', 'baradero', 'buenos aires', '836039394', 'Mail@mail.com', '2021-04-15 16:58:05', '938484432', '29848485'),
+(8, 'prueba 6', 'cualquiera', 'baradero', 'buenos aires', '34848505', 'Alguno@mail.com', '2021-04-19 15:57:31', '38948405', '38384949'),
+(9, 'proveedor 7', 'actualizada', 'baradero', 'buenos aires', '84748595', 'Alguno@mail.com', '2021-05-03 00:31:51', '849958585', '848484'),
+(10, 'proveedor 8', 'cualquiera', 'baradero', 'buenos aires', '3435464646', 'Alguno@mail.com', '2021-05-03 00:40:56', '343435464', '343434');
 
 -- --------------------------------------------------------
 
@@ -140,6 +191,7 @@ INSERT INTO `proveedores` (`idproveedor`, `razon_social`, `domicilio`, `localida
 CREATE TABLE `sales` (
   `sales_id` int(11) NOT NULL,
   `item_code` varchar(35) CHARACTER SET latin1 NOT NULL,
+  `item_id` int(11) NOT NULL,
   `generic_name` varchar(35) CHARACTER SET latin1 NOT NULL,
   `qty` int(11) NOT NULL,
   `price` float NOT NULL,
@@ -150,8 +202,9 @@ CREATE TABLE `sales` (
 -- Volcado de datos para la tabla `sales`
 --
 
-INSERT INTO `sales` (`sales_id`, `item_code`, `generic_name`, `qty`, `price`, `date_sold`) VALUES
-(12, '9876454', 'Jabon', 1, 53.5, '2021-04-23 21:48:23');
+INSERT INTO `sales` (`sales_id`, `item_code`, `item_id`, `generic_name`, `qty`, `price`, `date_sold`) VALUES
+(23, '948475758', 8, 'Arroz', 2, 25.9, '2021-04-27 21:35:35'),
+(24, '8748484585', 9, 'Yerba', 2, 350, '2021-04-27 21:35:35');
 
 -- --------------------------------------------------------
 
@@ -174,10 +227,53 @@ CREATE TABLE `stock` (
 --
 
 INSERT INTO `stock` (`stock_id`, `item_id`, `stock_qty`, `stock_min`, `stock_max`, `stock_added`, `stock_purchased`) VALUES
-(24, 8, 50, 20, 50, '2021-04-24 23:00:05', '2021-04-22'),
-(25, 10, 50, 30, 50, '2021-04-24 23:00:07', '2021-04-22'),
-(36, 5, 44, 40, 60, '2021-04-25 03:36:42', '2021-04-21'),
-(38, 9, 50, 40, 50, '2021-04-23 22:47:15', '2021-04-22');
+(42, 8, 50, 30, 50, '2021-05-23 23:55:55', '2021-05-22');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `stock_carne`
+--
+
+CREATE TABLE `stock_carne` (
+  `stock_id` int(11) NOT NULL,
+  `item_id` int(11) NOT NULL,
+  `proveedor_id` int(11) NOT NULL,
+  `costo` float NOT NULL DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
+
+--
+-- Volcado de datos para la tabla `stock_carne`
+--
+
+INSERT INTO `stock_carne` (`stock_id`, `item_id`, `proveedor_id`, `costo`) VALUES
+(9, 5, 2, 0),
+(10, 6, 4, -6000),
+(11, 7, 5, 0);
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `stock_carne_detalle`
+--
+
+CREATE TABLE `stock_carne_detalle` (
+  `detalle_id` int(11) NOT NULL,
+  `stock_id` int(11) NOT NULL,
+  `item_id` int(11) NOT NULL,
+  `item_code` varchar(50) COLLATE utf8_spanish_ci NOT NULL,
+  `proveedor_id` int(11) NOT NULL,
+  `stock_qty` int(11) NOT NULL,
+  `costo` float NOT NULL,
+  `stock_purchased` date NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
+
+--
+-- Volcado de datos para la tabla `stock_carne_detalle`
+--
+
+INSERT INTO `stock_carne_detalle` (`detalle_id`, `stock_id`, `item_id`, `item_code`, `proveedor_id`, `stock_qty`, `costo`, `stock_purchased`) VALUES
+(14, 10, 6, '002', 4, 600, -6000, '2021-05-22');
 
 -- --------------------------------------------------------
 
@@ -213,6 +309,18 @@ ALTER TABLE `cart`
   ADD KEY `user_id` (`user_id`);
 
 --
+-- Indices de la tabla `categoria_carnes`
+--
+ALTER TABLE `categoria_carnes`
+  ADD PRIMARY KEY (`categoria_id`);
+
+--
+-- Indices de la tabla `compra_proveedores`
+--
+ALTER TABLE `compra_proveedores`
+  ADD PRIMARY KEY (`id_compra`);
+
+--
 -- Indices de la tabla `expired`
 --
 ALTER TABLE `expired`
@@ -222,8 +330,7 @@ ALTER TABLE `expired`
 -- Indices de la tabla `item`
 --
 ALTER TABLE `item`
-  ADD PRIMARY KEY (`item_id`),
-  ADD KEY `item_type_id` (`item_type_id`);
+  ADD PRIMARY KEY (`item_id`);
 
 --
 -- Indices de la tabla `item_type`
@@ -251,6 +358,20 @@ ALTER TABLE `stock`
   ADD KEY `item_id` (`item_id`);
 
 --
+-- Indices de la tabla `stock_carne`
+--
+ALTER TABLE `stock_carne`
+  ADD PRIMARY KEY (`stock_id`),
+  ADD KEY `item_id` (`item_id`);
+
+--
+-- Indices de la tabla `stock_carne_detalle`
+--
+ALTER TABLE `stock_carne_detalle`
+  ADD PRIMARY KEY (`detalle_id`),
+  ADD KEY `item_id` (`item_id`);
+
+--
 -- Indices de la tabla `user`
 --
 ALTER TABLE `user`
@@ -264,7 +385,19 @@ ALTER TABLE `user`
 -- AUTO_INCREMENT de la tabla `cart`
 --
 ALTER TABLE `cart`
-  MODIFY `cart_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=122;
+  MODIFY `cart_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=286;
+
+--
+-- AUTO_INCREMENT de la tabla `categoria_carnes`
+--
+ALTER TABLE `categoria_carnes`
+  MODIFY `categoria_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
+-- AUTO_INCREMENT de la tabla `compra_proveedores`
+--
+ALTER TABLE `compra_proveedores`
+  MODIFY `id_compra` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT de la tabla `expired`
@@ -276,31 +409,43 @@ ALTER TABLE `expired`
 -- AUTO_INCREMENT de la tabla `item`
 --
 ALTER TABLE `item`
-  MODIFY `item_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `item_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT de la tabla `item_type`
 --
 ALTER TABLE `item_type`
-  MODIFY `item_type_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `item_type_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT de la tabla `proveedores`
 --
 ALTER TABLE `proveedores`
-  MODIFY `idproveedor` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `idproveedor` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT de la tabla `sales`
 --
 ALTER TABLE `sales`
-  MODIFY `sales_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `sales_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
 
 --
 -- AUTO_INCREMENT de la tabla `stock`
 --
 ALTER TABLE `stock`
-  MODIFY `stock_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=39;
+  MODIFY `stock_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=43;
+
+--
+-- AUTO_INCREMENT de la tabla `stock_carne`
+--
+ALTER TABLE `stock_carne`
+  MODIFY `stock_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+
+--
+-- AUTO_INCREMENT de la tabla `stock_carne_detalle`
+--
+ALTER TABLE `stock_carne_detalle`
+  MODIFY `detalle_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- AUTO_INCREMENT de la tabla `user`
